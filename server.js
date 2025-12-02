@@ -4,14 +4,23 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 
-// Use PORT from Render or fallback
+// Use PORT from Railway or fallback
 const port = process.env.PORT || 5000;
 
-// Middlewares
-app.use(cors());
+
+// CORS FIX (IMPORTANT FOR CPANEL FRONTEND)
+
+app.use(cors({
+  origin: "*",  // Allow all for now — safest
+  methods: ["GET", "POST", "PUT", "DELETE"],
+}));
+
+// Body parser
 app.use(express.json());
 
+
 // TEST DB CONNECTION ROUTE
+
 app.get("/test-db", (req, res) => {
   const db = require("./db");
 
@@ -19,7 +28,7 @@ app.get("/test-db", (req, res) => {
     if (err) {
       return res.status(500).json({
         success: false,
-        message: err.message
+        message: "DB ERROR: " + err.message
       });
     }
 
@@ -30,7 +39,9 @@ app.get("/test-db", (req, res) => {
   });
 });
 
+// --------------------------------------
 // CHECK IF CUSTOMERS TABLE EXISTS
+// --------------------------------------
 app.get("/check-customers-table", (req, res) => {
   const db = require("./db");
 
@@ -51,7 +62,9 @@ app.get("/check-customers-table", (req, res) => {
   });
 });
 
+// --------------------------------------
 // HEALTH ROUTE
+// --------------------------------------
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -61,7 +74,9 @@ app.get("/", (req, res) => {
   });
 });
 
-// ROUTES
+// --------------------------------------
+// MAIN ROUTES
+// --------------------------------------
 try {
   app.use("/customers", require("./routes/customers"));
   app.use("/orders", require("./routes/orders"));
@@ -69,7 +84,9 @@ try {
   console.error("Route loading error:", error);
 }
 
+// --------------------------------------
 // 404 Handler (MUST BE LAST)
+// --------------------------------------
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -77,7 +94,9 @@ app.use((req, res) => {
   });
 });
 
-// Start Server
+// --------------------------------------
+// START SERVER
+// --------------------------------------
 app.listen(port, () => {
   console.log(`🚀 Backend running on port ${port}`);
 });
